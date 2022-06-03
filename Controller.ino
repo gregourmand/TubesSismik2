@@ -18,20 +18,20 @@ const byte numChars = 32;
 char receivedChars[numChars];
 char tempChars[numChars];        
 
-float input = 0.0;
+float input = 0.0;    // input dari pengguna (reference value) berupa unit step
 float kp = 0.0;
 float ki = 0.0;
 float kd = 0.0;
-float output = 0.0;
+float output = 0.0;   // Output yaitu keluaran dari plant (sebagai feedback dan dialirkan ke input Controller)
 
 float elapsedTime;
-float error = 0.0 ;
+float error = 0.0 ;   // selisih dari reference value dengan feedback dari plant
 float lastError = 0.0;
 float cumError = 0.0;
 float rateError = 0.0;
-float out = 0.0;
+float out = 0.0;      //  out adalah keluaran dari pid untuk diberikan ke plant
 
-float input_pot;
+float input_pot;      // input dari pengguna (jika menggunakan potensiometer)
 int pot = A5;
 boolean newData = false;
 
@@ -71,14 +71,13 @@ int min_control;
 
 ISR(TIMER1_OVF_vect) {
     TCNT1 = timer1_counter;
-
-    error = input - output;
     
-    //out = -A1/A0*u[k-1] - A2/A0*u[k-2] + B0/A0*e[k] + B1/A0*e[k-1] + B2/A0*e[k-2]
+    error = input - output; // input dari pengguna dikurang dengan output (keluaran dari plant sebagai feedback)
+    
     elapsedTime = 5;        //compute time elapsed from previous computation
 
-    error = input - output;                    // determine error
-    cumError = cumError+error ;                // compute integral
+    error = input - output;            // determine error
+    cumError = cumError+error ;        // compute integral
     
     rateError = (error - lastError);   // compute derivative
 
@@ -89,6 +88,8 @@ ISR(TIMER1_OVF_vect) {
 //    Serial.println(rateError);
     
     out = kp*error + (ki*elapsedTime)*cumError + (kd/elapsedTime)*rateError;                //PID output               
+
+//  out adalah keluaran dari pid untuk diberikan ke plant
 
     sSerial.println(out);
      
@@ -122,8 +123,8 @@ void loop() {
     //showParsedData();
     
     if (sSerial.available() > 0){
-      output = sSerial.parseFloat();
-      //error = input - output;
+      output = sSerial.parseFloat(); 
+      // Output yaitu keluaran dari plant (sebagai feedback dan dialirkan ke input Controller)
     }
     
 }
